@@ -46,7 +46,7 @@ public class SerialTest implements SerialPortEventListener {
         // gets us into the while loop and was suggested here was suggested http://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
         //System.setProperty("gnu.io.rxtx.SerialPorts", "COM4");
 
-        CommPortIdentifier portId = null;
+        CommPortIdentifier portId = null;      
         Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
 
         //First, Find an instance of serial port as set in PORT_NAMES.
@@ -62,12 +62,12 @@ public class SerialTest implements SerialPortEventListener {
         if (portId == null) {
             throw new Exception("No se ha encontrado el puerto");
         }
-
-        try {
+        
+        try {          
             // open serial port, and use class name for the appName.
             serialPort = (SerialPort) portId.open(this.getClass().getName(),
                     TIME_OUT);
-
+             
             // set port parameters
             serialPort.setSerialPortParams(DATA_RATE,
                     SerialPort.DATABITS_8,
@@ -83,6 +83,7 @@ public class SerialTest implements SerialPortEventListener {
             // add event listeners
             serialPort.addEventListener(this);
             serialPort.notifyOnDataAvailable(true);
+            serialPort.setDTR(true);
             
         } catch (PortInUseException | UnsupportedCommOperationException | IOException | TooManyListenersException e) {
             throw new Exception(e.toString());
@@ -107,11 +108,11 @@ public class SerialTest implements SerialPortEventListener {
     /**
      * Handle an event on the serial port. Read the data and print it.
      */
+    @Override
     public synchronized void serialEvent(SerialPortEvent oEvent) {
         if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
             try {
-                String inputLine = input.readLine();
-                //System.out.println(inputLine);
+                String inputLine = input.readLine();             
                 //System.out.println(data);
                 this.data = inputLine;
             } catch (Exception e) {
@@ -120,5 +121,5 @@ public class SerialTest implements SerialPortEventListener {
         }
         // Ignore all the other eventTypes, but you should consider the other ones.
     }
-
+    
 }

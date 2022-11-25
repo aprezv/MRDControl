@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: MRDControl.MainWindow
+Class-Path: /Users/armando/props/lib

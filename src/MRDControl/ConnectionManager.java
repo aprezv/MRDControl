@@ -17,7 +17,7 @@ public class ConnectionManager {
     private static Connection con;
     private static String url = "jdbc:mysql://localhost/mrdcontrol";
     private static String username = "root";
-    private static String password = "";
+    private static String password = "Alcohol145.";
 
     private static void initializeConnection() throws SQLException {
         con = DriverManager.getConnection(url, username, password);

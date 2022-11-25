@@ -24,6 +24,7 @@ class Leer implements Runnable {
     Timer timerToSave;
     Timer tt;
     boolean canSave = false;
+    char defaultStatus = '0';
 
     public Leer(RoomPanel room, SerialTest serial, OccupancyRecordDAO dao) {
         this.serial = serial;
@@ -31,19 +32,29 @@ class Leer implements Runnable {
         this.dao = dao;
         this.panel = room;
         or = new OccupancyRecord(room.getIcon().getNumber());
-        timerToSetReady = new Timer(Config.timeParams.getDoorDown(), new SetReadyToSave(or, room));
-        timerToSave = new Timer(Config.timeParams.getDoorUp(), new WaitForSave(dao, or, panel));
+        int doorDown = Integer.valueOf(Config.propiedades.getProperty("doorDown","1"))*1000*60;
+        int doorUp = Integer.valueOf(Config.propiedades.getProperty("doorUp","1"))*1000*60;
+        //timerToSetReady = new Timer(Config.timeParams.getDoorDown(), new SetReadyToSave(or, room));
+        //timerToSave = new Timer(Config.timeParams.getDoorUp(), new WaitForSave(dao, or, panel));
+        
+        timerToSetReady = new Timer(doorDown, new SetReadyToSave(or, room));
+        timerToSave = new Timer(doorUp, new WaitForSave(dao, or, panel));
+        
         timerToSetReady.setRepeats(false);
         timerToSave.setRepeats(false);
+        try{
+            defaultStatus = Config.propiedades.getProperty("entrada").toCharArray()[0];
+        }catch(Exception e){}
+        
     }
 
     @Override
     public void run() {
         char oldData = 'n';
         while (true) {
-            String data = serial.getData();
+            String data = serial.getData();         
             char[] dataChar = data.toCharArray();
-            if (dataChar.length == 52) {
+            if (dataChar.length == 66) {
                 if (oldData != dataChar[roomIcon.getNumber() - 1]) {
                     oldData = dataChar[roomIcon.getNumber() - 1];
                     if (dataChar[roomIcon.getNumber() - 1] == '0') {

@@ -8,7 +8,6 @@ package MRDControl;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,23 +24,24 @@ public class Config {
     public static Properties propiedades = new Properties();
     public static OutputStream out ;
     public static InputStream inputStream;
-    public static Params timeParams;
+
     static{
- 
+
         try {
-            inputStream = new FileInputStream("properties.properties"); //Config.class.getClassLoader().getResourceAsStream("properties.properties");
+            inputStream = new FileInputStream("C:\\MRDControl\\properties.properties");
+            //inputStream =  Config.class.getClassLoader().getResourceAsStream("properties.properties");
             propiedades.load(inputStream);
             inputStream.close();
         } catch (IOException ex) {
             System.out.println(ex);
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
         }
-		
+
     }
-    
+
     public static boolean save(){
         try {
-            out = new FileOutputStream( new File("properties.properties"));
+            out = new FileOutputStream( new File("C:\\MRDControl\\properties.properties"));
             propiedades.store(out,"");
             out.close();
             return true;
@@ -50,10 +50,6 @@ public class Config {
             Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
-    }
-    
-    public static void setTimeParams(Params params){
-        timeParams = params;
     }
 
 }

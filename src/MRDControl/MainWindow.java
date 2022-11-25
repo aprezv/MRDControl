@@ -1,25 +1,16 @@
 package MRDControl;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+//import MRDControl.report.SendReportScheduler;
+import MRDControl.report.SendReportScheduler;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -37,7 +28,6 @@ public class MainWindow extends javax.swing.JFrame {
     private OccupancyRecordDAO dao;
     private RoomDAO roomDao;
     private List<Room> roomList;
-    private ParamsDao paramsDao;
 
     public MainWindow() {
         initComponents();
@@ -48,13 +38,12 @@ public class MainWindow extends javax.swing.JFrame {
         setVisible(true);
         setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         if (connect()) {
-            paramsDao = new ParamsDao(con);
-            Config.setTimeParams(paramsDao.retrieve());
             initializePort();
             setRoomDao(new RoomDAO(con));
             roomList = roomDao.findAll();
             generarIconos(roomList);
             initThreads();
+            initScheduler();
         }
 
     }
@@ -85,6 +74,10 @@ public class MainWindow extends javax.swing.JFrame {
             }
 
         }
+    }
+    
+    private void initScheduler() {
+        new SendReportScheduler().schedule();
     }
 
     public void initializePort() {
@@ -305,7 +298,7 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     private void generarIconos(List<Room> roomList) {
-        
+
         for (Room r : roomList) {
             RoomIcon ri = new RoomIcon();
             RoomPanel p = new RoomPanel();
@@ -329,7 +322,7 @@ public class MainWindow extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -366,7 +359,7 @@ public class MainWindow extends javax.swing.JFrame {
         if (!currentJar.getName().endsWith(".jar")) {
             return;
         }
-        
+
         final ArrayList<String> command = new ArrayList<String>();
         command.add(javaBin);
         command.add("-jar");
