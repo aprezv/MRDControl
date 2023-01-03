@@ -29,7 +29,8 @@ public class ReportData {
             + "                date_format(starttime,'%%M %%d, %%Y') as fecha, "
             + "                date_format(starttime,'%%h:%%i:%%s %%p') as inicio, "
             + "                date_format(endtime,'%%h:%%i:%%s %%p') as fin, "
-            + "                timediff(endtime, starttime) as duracion "
+            + "                timediff(endtime, starttime) as duracion, "
+            + "                case when TIMESTAMPDIFF(MINUTE, starttime, endtime) >= 195 then true else false end as greater"
             + "            from "
             + "                occupancy_record "
             + "                where starttime >= str_to_date('%s','%%Y-%%m-%%d %%h:%%i%%p') "
@@ -57,6 +58,7 @@ public class ReportData {
             record.setEndTime(rs.getString("fin"));
             record.setDuration(rs.getString("duracion"));
             record.setDate(StringUtils.capitalize(rs.getString("fecha")));
+            record.setGreaterThan3hours(rs.getBoolean("greater"));
             list.add(record);
         }
         return list;

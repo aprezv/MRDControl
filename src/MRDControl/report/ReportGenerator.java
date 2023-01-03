@@ -21,6 +21,7 @@ import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.TransparentColor;
 import com.itextpdf.layout.property.UnitValue;
+
 import java.awt.color.ColorSpace;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -32,9 +33,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
- *
  * @author armando
  */
 public class ReportGenerator {
@@ -62,12 +63,11 @@ public class ReportGenerator {
 
         Date start = calendar.getTime();
 
-        System.out.println(start);
-        System.out.println(end);
         return generateReport(start, end);
     }
+
     public String generateReport(Date start, Date end) {
-       String fileName = "reporte.pdf";
+        String fileName = "reporte.pdf";
         try {
 
             byte[] byteArray = buildReport(start, end);
@@ -92,11 +92,43 @@ public class ReportGenerator {
         PdfWriter writer = new PdfWriter(out);
         PdfDocument pdf = new PdfDocument(writer);
 
+        List<ReportRecord> records;
+        try {
+            records = new ReportData().getData(start, end);
+        } catch (SQLException ex) {
+            Logger.getLogger(ReportGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException();
+        }
+
+        List<ReportRecord> moreThan315Hours = records.stream()
+                .filter(ReportRecord::isGreaterThan3hours)
+                .collect(Collectors.toList());
+
+        List<ReportRecord> rest = records.stream()
+                .filter(reportRecord -> !reportRecord.isGreaterThan3hours())
+                .collect(Collectors.toList());
+
+
         try (Document document = new Document(pdf)) {
             document.add(header());
+
+            document.add(summary(rest.size()));
             Table table = table();
-            addRecords(table);
+            addRecords(table, rest);
             document.add(table);
+
+            document.add(
+                    new Paragraph("Salidas Mayores de 3:15 Horas")
+                            .setMarginTop(20)
+                            .setFontColor(new DeviceRgb(60, 141, 188))
+                            .setBold()
+                            .setFontSize(14));
+
+            document.add(summary(moreThan315Hours.size()));
+            Table table2 = table();
+            addRecords(table2, moreThan315Hours);
+            document.add(table2);
+
             document.close();
             return out.toByteArray();
         }
@@ -104,7 +136,7 @@ public class ReportGenerator {
 
     private Paragraph header() {
         Paragraph header = new Paragraph(
-                Config.propiedades.getProperty("empresa","nombre de empresa") +
+                Config.propiedades.getProperty("empresa", "nombre de empresa") +
                         "\nREPORTE OCUPACION HABITACIONES"
         );
         header.setFontSize(18);
@@ -113,14 +145,24 @@ public class ReportGenerator {
         return header;
     }
 
+    private Table summary(int recordCOunt) {
+        Table table = new Table(
+                new UnitValue[]{
+                        new UnitValue(UnitValue.PERCENT, 100)
+
+                }).setBorder(Border.NO_BORDER);
+        table.addCell(new Cell().add(new Paragraph("Total de rentas: " +recordCOunt)).setBorder(Border.NO_BORDER));
+        return table;
+    }
+
     private Table table() {
         Table table = new Table(
                 new UnitValue[]{
-                    new UnitValue(UnitValue.PERCENT, 12),
-                    new UnitValue(UnitValue.PERCENT, 22),
-                    new UnitValue(UnitValue.PERCENT, 22),
-                    new UnitValue(UnitValue.PERCENT, 22),
-                    new UnitValue(UnitValue.PERCENT, 22)
+                        new UnitValue(UnitValue.PERCENT, 12),
+                        new UnitValue(UnitValue.PERCENT, 22),
+                        new UnitValue(UnitValue.PERCENT, 22),
+                        new UnitValue(UnitValue.PERCENT, 22),
+                        new UnitValue(UnitValue.PERCENT, 22)
                 });
         table.addHeaderCell(headerCell("Habitación"));
         table.addHeaderCell(headerCell("Fecha"));
@@ -155,22 +197,16 @@ public class ReportGenerator {
         return cell;
     }
 
-    private void addRecords(Table table) {
-        List<ReportRecord> records;
-        try {
-            records = new ReportData().getData(start, end);
-            System.out.println("size" + records.size());
-            boolean odd = true;
-            for (ReportRecord record : records) {
-                odd = !odd;
-                table.addCell(contentCell(record.getIdRoom(), odd));
-                table.addCell(contentCell(record.getDate(), odd));
-                table.addCell(contentCell(record.getStartTime(), odd));
-                table.addCell(contentCell(record.getEndTime(), odd));
-                table.addCell(contentCell(record.getDuration(), odd));
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(ReportGenerator.class.getName()).log(Level.SEVERE, null, ex);
+    private void addRecords(Table table, List<ReportRecord> records) {
+        boolean odd = true;
+        for (ReportRecord record : records) {
+            odd = !odd;
+            table.addCell(contentCell(record.getIdRoom(), odd));
+            table.addCell(contentCell(record.getDate(), odd));
+            table.addCell(contentCell(record.getStartTime(), odd));
+            table.addCell(contentCell(record.getEndTime(), odd));
+            table.addCell(contentCell(record.getDuration(), odd));
         }
+
     }
 }
