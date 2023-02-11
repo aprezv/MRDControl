@@ -35,9 +35,10 @@ public class MailSender implements Runnable {
     private String user;
     private String password;
     private ReportGenerator reportGenerator;
+    private Report report;
 
 
-    public MailSender() {
+    public MailSender(Report report) {
         this.user = MailConfig.propiedades.getProperty("mail.username");
         this.password = MailConfig.propiedades.getProperty("mail.password");
         Properties props = new Properties();
@@ -50,10 +51,11 @@ public class MailSender implements Runnable {
         props.put("mail.smtp.ssl.protocols", "TLSv1.2");
         this.session = Session.getDefaultInstance(props);
         this.reportGenerator = new ReportGenerator();
+        this.report = report;
     }
 
     public void sendMail() throws MessagingException {
-        String filePath = reportGenerator.generateReport();
+        String filePath = reportGenerator.generateReport(this.report);
         File file = new File(filePath);
         String to = Config.propiedades.get("correo").toString();
         List<String> tos = Arrays.asList(to.split(","));

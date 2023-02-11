@@ -1,6 +1,7 @@
 package MRDControl;
 
 //import MRDControl.report.SendReportScheduler;
+import MRDControl.mail.Report;
 import MRDControl.report.SendReportScheduler;
 import javax.swing.*;
 import java.awt.*;
@@ -75,9 +76,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         }
     }
-    
+
     private void initScheduler() {
-        new SendReportScheduler().schedule();
+        System.out.println("Initiating scheduler");
+        new SendReportScheduler().schedule(Report.SEVEN_AM);
+        new SendReportScheduler().schedule(Report.TEN_AM);
     }
 
     public void initializePort() {

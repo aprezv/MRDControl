@@ -1,6 +1,8 @@
 package MRDControl;
 
 import MRDControl.mail.MailSender;
+import MRDControl.mail.Report;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
@@ -26,21 +28,21 @@ public class ConfigurarPuerto extends javax.swing.JFrame {
      * Creates new form ConfigurarPuerto
      */
     public ConfigurarPuerto() {
-        this.mailSender = new MailSender();
+        this.mailSender = new MailSender(Report.SEVEN_AM);
         initComponents();
         jComboBox1.setSelectedItem(Config.propiedades.getProperty("port","COM3"));
         txtAncho.setText(Config.propiedades.getProperty("ancho",""));
         txtAlto.setText(Config.propiedades.getProperty("alto",""));
         txtIcono.setText(Config.propiedades.getProperty("icono",""));
         jComboBox3.setSelectedItem(Config.propiedades.getProperty("entrada","0"));
-        
+
         doorUp.setValue(Integer.valueOf(Config.propiedades.getProperty("doorUp","1")));
         doorDown.setValue(Integer.valueOf(Config.propiedades.getProperty("doorDown","1")));
-       
+
         txtCorreo.setText(Config.propiedades.getProperty("correo","@"));
         txtEmpresa.setText(Config.propiedades.getProperty("empresa","nombre de empresa"));
         cmbHora.setSelectedItem(Config.propiedades.getProperty("hora","7:00 AM"));
-        
+
         setLocationRelativeTo(null);
     }
 
@@ -391,10 +393,10 @@ public class ConfigurarPuerto extends javax.swing.JFrame {
         Config.propiedades.setProperty("correo",txtCorreo.getText());
         Config.propiedades.setProperty("hora",cmbHora.getSelectedItem().toString());
         Config.propiedades.setProperty("empresa",txtEmpresa.getText());
-        
+
         Config.save();
         dispose();
-        
+
         try {
             MainWindow.restartApplication();
         } catch (IOException ex) {
@@ -405,7 +407,7 @@ public class ConfigurarPuerto extends javax.swing.JFrame {
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -423,7 +425,7 @@ public class ConfigurarPuerto extends javax.swing.JFrame {
                     }
                 }
             }).start();
-       
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void txtCorreoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCorreoActionPerformed
@@ -437,7 +439,7 @@ public class ConfigurarPuerto extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {

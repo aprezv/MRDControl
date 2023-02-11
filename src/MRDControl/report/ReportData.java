@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import MRDControl.mail.Report;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -22,8 +24,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ReportData {
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("Y-M-d hh:mmaa");
-    private String query = "select "
+    private SimpleDateFormat sdf = new SimpleDateFormat("y-MM-d hh:mmaa");
+    private String sevenAm = "select "
             + "                idroom, "
             + "                starttime, "
             + "                date_format(starttime,'%%M %%d, %%Y') as fecha, "
@@ -37,9 +39,32 @@ public class ReportData {
             + "                and   starttime <= str_to_date('%s','%%Y-%%m-%%d %%h:%%i%%p')"
             + "                order by starttime";
 
-    public List<ReportRecord> getData(Date start, Date end) throws SQLException {
+    private String tenAm = "select "
+            + "                idroom, "
+            + "                starttime, "
+            + "                date_format(starttime,'%%M %%d, %%Y') as fecha, "
+            + "                date_format(starttime,'%%h:%%i:%%s %%p') as inicio, "
+            + "                date_format(endtime,'%%h:%%i:%%s %%p') as fin, "
+            + "                timediff(endtime, starttime) as duracion, "
+            + "                case when TIMESTAMPDIFF(MINUTE, starttime, endtime) >= 195 then true else false end as greater"
+            + "            from "
+            + "                occupancy_record "
+            + "                where starttime <= str_to_date('%s','%%Y-%%m-%%d %%h:%%i%%p') "
+            + "                and   endtime >= str_to_date('%s','%%Y-%%m-%%d %%h:%%i%%p')"
+            + "                order by starttime";
+
+
+    String getQuery(Report report) {
+        switch (report) {
+            case TEN_AM: return  tenAm;
+            case SEVEN_AM: return sevenAm;
+        }
+        return "";
+    }
+
+    public List<ReportRecord> getData(Report report, Date start, Date end) throws SQLException {
         String finalQuery = String.format(
-                query,
+                getQuery(report),
                 sdf.format(start),
                 sdf.format(end));
         System.out.println("Query: " + finalQuery);
@@ -49,7 +74,6 @@ public class ReportData {
         con.createStatement().executeQuery("SET lc_time_names = 'es_MX'; ");
         ResultSet rs = con.createStatement().executeQuery(finalQuery);
         List<ReportRecord> list = new ArrayList();
-        System.out.println("List Size: " + list.size());
 
         while (rs.next()) {
             ReportRecord record = new ReportRecord();
@@ -61,6 +85,7 @@ public class ReportData {
             record.setGreaterThan3hours(rs.getBoolean("greater"));
             list.add(record);
         }
+        System.out.println("List Size: " + list.size());
         return list;
     }
 }

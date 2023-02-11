@@ -6,6 +6,7 @@
 package MRDControl.report;
 
 import MRDControl.Config;
+import MRDControl.mail.Report;
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -39,38 +40,45 @@ import java.util.stream.Collectors;
  * @author armando
  */
 public class ReportGenerator {
-    private Date start;
-    private Date end;
-
     public ReportGenerator() {
 
     }
 
-    public String generateReport() {
+    public String generateReport(Report report) {
+        Calendar calendar;
+        Date start = null;
+        Date end = null;
+        switch (report) {
+            case SEVEN_AM:
+                calendar = Calendar.getInstance();
+                calendar.set(calendar.get(Calendar.YEAR),
+                             calendar.get(Calendar.MONTH),
+                             calendar.get(Calendar.DATE), 6, 59);
+                end = calendar.getTime();
+                calendar.add(Calendar.DATE, -1);
+                calendar.set(calendar.get(Calendar.YEAR),
+                             calendar.get(Calendar.MONTH),
+                             calendar.get(Calendar.DATE), 7, 0);
+                start = calendar.getTime();
+                break;
+            case TEN_AM:
+                calendar = Calendar.getInstance();
+                calendar.set(calendar.get(Calendar.YEAR),
+                             calendar.get(Calendar.MONTH),
+                             calendar.get(Calendar.DATE), 7, 0);
+                start = calendar.getTime();
+                end = start;
+                break;
+        }
 
-        Calendar calendar = Calendar.getInstance();
-
-        calendar.set(calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DATE), 6, 59);
-
-        Date end = calendar.getTime();
-
-        calendar.add(Calendar.DATE, -1);
-        calendar.set(calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DATE), 7, 0);
-
-        Date start = calendar.getTime();
-
-        return generateReport(start, end);
+        return generateReport(report,start, end);
     }
 
-    public String generateReport(Date start, Date end) {
+    public String generateReport(Report report, Date start, Date end) {
         String fileName = "reporte.pdf";
         try {
 
-            byte[] byteArray = buildReport(start, end);
+            byte[] byteArray = buildReport(report, start, end);
             try (FileOutputStream fos = new FileOutputStream(fileName)) {
                 fos.write(byteArray);
 
@@ -85,16 +93,14 @@ public class ReportGenerator {
         return fileName;
     }
 
-    public byte[] buildReport(Date start, Date end) throws FileNotFoundException {
-        this.start = start;
-        this.end = end;
+    public byte[] buildReport(Report report, Date start, Date end) throws FileNotFoundException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(out);
         PdfDocument pdf = new PdfDocument(writer);
 
         List<ReportRecord> records;
         try {
-            records = new ReportData().getData(start, end);
+            records = new ReportData().getData(report, start, end);
         } catch (SQLException ex) {
             Logger.getLogger(ReportGenerator.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException();

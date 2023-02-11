@@ -5,17 +5,15 @@
  */
 package MRDControl.report;
 
-import MRDControl.Config;
 import MRDControl.ConfigurarPuerto;
 import MRDControl.mail.MailSender;
+import MRDControl.mail.Report;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,8 +26,9 @@ import java.util.logging.Logger;
  */
 public class SendReportScheduler {
 
-    public void schedule() {
-        String hourString = Config.propiedades.getProperty("hora", "7:00 AM");
+    public void schedule(Report report) {
+        String hourString = report.getHourString();
+        System.out.println("Scheduling " + hourString);
         int hour;
         int minute;
 
@@ -56,7 +55,7 @@ public class SendReportScheduler {
         long initalDelay = duration.getSeconds();
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(new MailSender(),
+        scheduler.scheduleAtFixedRate(new MailSender(report),
                 initalDelay,
                 TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
