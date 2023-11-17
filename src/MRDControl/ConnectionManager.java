@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class ConnectionManager {
 
     private static Connection con;
-    private static String url = "jdbc:mysql://localhost/mrdcontrol";
+    private static String url = "jdbc:mysql://localhost/mrdcontrol?autoReconnect=true";
     private static String username = "root";
     private static String password = "Alcohol145.";
 
